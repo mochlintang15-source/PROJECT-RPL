@@ -1,0 +1,97 @@
+CATATAN REVISI - TOKO SKINCARE
+
+File ini sudah disesuaikan dengan database: toko_skincare_kosmetik.sql
+
+Penyesuaian penting:
+1. Koneksi database menggunakan nama database `toko_skincare_kosmetik`.
+2. Tabel users sudah disesuaikan dengan kolom SQL:
+   - id_user
+   - nama
+   - email
+   - password
+   - role
+   - alamat
+   - no_hp
+   - created_at
+   - updated_at
+3. Form tambah/edit user sudah menambahkan field alamat dan no_hp.
+4. Proses insert/update user sudah memasukkan alamat dan no_hp agar tidak gagal karena kolom SQL bersifat NOT NULL.
+5. Tabel products sudah disesuaikan dengan kolom SQL:
+   - id_product
+   - nama_produk
+   - deskripsi
+   - harga
+   - stok
+   - id_kategori
+   - id_brand
+   - gambar
+   - created_at
+   - updated_at
+6. Form tambah/edit produk sudah menambahkan kategori dan brand dari tabel categories dan brands.
+7. Daftar produk dan katalog sudah memakai LEFT JOIN ke categories dan brands.
+8. Status order sudah mengikuti ENUM di SQL:
+   - pending
+   - dibayar
+   - dikirim
+   - selesai
+   - batal
+9. Login tetap memakai tabel users dan kolom email/password.
+10. Upload gambar produk tetap aman. Jika tidak ada gambar, kolom gambar disimpan dengan nilai "-" karena SQL mewajibkan gambar NOT NULL.
+
+Catatan:
+- Tabel carts, cart_items, payments, promos, reviews, shipments, dan order_items sudah ada di SQL, tetapi belum semuanya dibuatkan fitur halaman penuh di aplikasi ini.
+- Fitur utama yang sudah terhubung: users, products, categories, brands, dan orders.
+
+
+UPDATE AUTO STOK:
+- Stok produk otomatis berkurang ketika status order berubah dari pending/batal menjadi dibayar/dikirim/selesai.
+- Stok tidak dikurangi dua kali jika status berubah dari dibayar ke dikirim atau selesai.
+- Jika order yang sudah laku diubah menjadi batal, stok produk otomatis dikembalikan.
+- Sistem menolak update order jika stok produk tidak cukup.
+
+UPDATE ORDER - 04 Mei 2026:
+- Halaman admin/order.php sekarang menampilkan nama barang yang dipesan.
+- Halaman admin/order.php sekarang menampilkan jumlah total barang yang diorder.
+- Tombol aksi order diubah menjadi "Detail / Update" agar admin bisa melihat detail barang per order.
+- Halaman admin/update_order.php dirapikan menjadi detail order lengkap: nama pemesan, tanggal order, nama barang, jumlah diorder, stok saat ini, harga satuan, dan subtotal.
+- Query order sudah disesuaikan dengan tabel orders, order_items, products, dan users pada SQL toko_skincare_kosmetik.sql.
+
+
+REVISI ORDER NOMOR URUT & HAPUS:
+- Kolom ID di halaman Manajemen Order diganti menjadi No agar tampilan nomor selalu urut walaupun id_order database meloncat.
+- Tombol Hapus order ditambahkan. Jika order berstatus dibayar/dikirim/selesai, stok dikembalikan sebelum order dihapus.
+- Jika semua order sudah kosong, AUTO_INCREMENT orders dan order_items di-reset ke 1 untuk kebutuhan testing/demo.
+- Catatan: untuk order manual dari SQL, data harus masuk ke orders DAN order_items agar Nama Barang dan Jumlah Barang muncul.
+
+UPDATE INTEGRASI PAYMENT & BUKTI PEMBAYARAN - 01 Juni 2026:
+- Fitur payment yang sebelumnya terpisah di folder Payment sudah diintegrasikan ke aplikasi utama `tokoskincare`.
+- Katalog user sekarang memiliki tombol tambah ke keranjang.
+- Ditambahkan halaman user:
+  1. user/keranjang.php
+  2. user/checkout.php
+  3. user/upload_bukti.php
+  4. user/status_pesanan.php
+- Ditambahkan proses:
+  1. process/add_to_cart.php
+  2. process/update_cart.php
+  3. process/checkout_process.php
+  4. process/upload_bukti.php
+  5. process/verify_payment.php
+- Bukti pembayaran disimpan di folder `tokoskincare/uploads/payment_proofs/`.
+- Ditambahkan halaman admin `admin/bukti_pembayaran.php` untuk melihat file bukti transfer/e-wallet dan memvalidasi/menolak pembayaran.
+- Sidebar admin sekarang memiliki menu “Bukti Pembayaran”.
+- Halaman Manajemen Order dan Detail Order sekarang menampilkan status pembayaran dan tombol lihat bukti.
+- Validasi pembayaran admin akan menyinkronkan tabel `payments` dan `orders`:
+  - valid: payments.status_pembayaran = lunas, orders.status_order = dibayar
+  - tolak: payments.status_pembayaran = gagal, orders.status_order = batal
+- Pengurangan stok tetap aman karena status order diproses melalui helper `config/order_helpers.php`; stok tidak dikurangi dua kali.
+- SQL sudah ditambahkan akun admin default:
+  - email: admin@test.com
+  - password: admin123
+- Akun user demo tetap tersedia:
+  - email: user@test.com
+  - password: 123
+
+
+CATATAN STRUKTUR TERBARU:
+Folder lama Payment dan halaman_awal tidak perlu dijalankan lagi karena sudah digabung ke folder tokoskincare. File SQL yang digunakan hanya database/toko_skincare_kosmetik.sql.
